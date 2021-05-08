@@ -41,7 +41,7 @@ always@(posedge clk or negedge nrst)begin
 		y_power_4	<=	1024'd0;
 	end
 	else	begin
-		x_power_2_times_3	<=	3	*	y_power_2;
+		x_power_2_times_3	<=	3	*	x_power_2;
 		z_power_4	<=	z_power_2	*	z_power_2;
 		y_power_2_times_x	<=	y_power_2	*	x1;
 		y_power_4	<=	y_power_2	*	y_power_2;
@@ -71,10 +71,15 @@ always@(posedge	clk	or	negedge	nrst)begin
 		lamda_2_moded	<=	256'd0;
 		lamda_3_moded	<=	256'd0;
 	end
-	else	begin
+	else	if(!lamda_1[514])	begin
 		lamda_1_moded	<=	lamda_1	%	p;
 		lamda_2_moded	<=	lamda_2	%	p;
 		lamda_3_moded	<=	lamda_3	%	p;
+	end
+	else	begin
+		lamda_1_moded	<=	p	-	(~	(lamda_1[513:0]	-	1)	%	p);
+		lamda_2_moded	<=	lamda_2	%	p;
+		lamda_3_moded	<=	lamda_3	%	p;	
 	end
 end
 //计算x3
@@ -89,8 +94,10 @@ end
 always@(posedge clk or negedge nrst)begin
 	if(!nrst)
 		x3	<=	256'd0;
-	else
+	else	if(!x3_r[511])
 		x3	<=	x3_r	%	p;
+	else
+		x3	<=	p	-	(~	(x3_r[510:0]	-	1)	%	p);
 end
 //计算y3,z3;
 reg	[511:0]	y3_r;
@@ -111,8 +118,12 @@ always@(posedge clk or negedge nrst)begin
 		y3	<=	256'd0;
 		z3	<=	256'd0;
 	end
-	else	begin
+	else	if(!y3_r[511])	begin
 		y3	<=	y3_r	%	p;
+		z3	<=	z3_r	%	p;
+	end
+	else	begin
+		y3	<=	p	-	(~	(y3_r[510:0]	-	1)	%	p);
 		z3	<=	z3_r	%	p;
 	end
 end

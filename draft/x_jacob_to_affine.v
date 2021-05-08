@@ -21,43 +21,34 @@ end
 
 reg	[255:0]		counter;
 reg	[767:0]		fenmu_2;
+
 always@(posedge clk or negedge nrst)begin
-	if(!nrst)begin
+	if(!nrst)	begin
+		nextstate	<=	IDLE;
 		counter	<=	256'd1;
 		fenmu_2	<=	z3	*	z3;
 	end
 	else	begin
 	case(state)
-	START:	begin
-				counter	<=	256'd1;
-				fenmu_2	<=	z3	*	z3;
-			end
-	COMPUTE:begin
-				counter	<=	counter	+	1;
-				fenmu_2	<=	fenmu_2	+	(z3	*	z3);
-			end
-	default:begin
-				counter	<=	counter;
-				fenmu_2	<=	fenmu_2;
-			end
-	endcase
-	end
-end
-
-always@(posedge clk or negedge nrst)begin
-	if(!nrst)
-		nextstate	<=	IDLE;
-	else	begin
-	case(state)
 	IDLE:		if(flag)
+					nextstate	<=	START;
+				else	if(nextstate	==	START)
 					nextstate	<=	START;
 				else
 					nextstate	<=	IDLE;
-	START:		nextstate	<=	COMPUTE;
-	COMPUTE:	if((fenmu_2	%	p)	==	x3)
-					nextstate	<=	DONE;
-				else
+	START:		begin
 					nextstate	<=	COMPUTE;
+					fenmu_2	<=	z3	*	z3;
+				end	
+	COMPUTE:	if(nextstate	==	DONE)
+					nextstate	<=	IDLE;
+				else	if((fenmu_2	%	p)	==	x3)
+					nextstate	<=	DONE;
+				else	begin
+					counter	<=	counter	+	1;
+					nextstate	<=	COMPUTE;
+					fenmu_2	<=	fenmu_2	+	(z3	*	z3);
+				end
 	DONE:		nextstate	<=	IDLE;
 	endcase
 	end
@@ -70,7 +61,7 @@ always@(posedge clk or negedge nrst)begin
 		mod_x_done	<=	1'b0;
 		x	<=	256'd0;
 	end
-	else	if(state == DONE)begin
+	else	if(nextstate == DONE)begin
 		mod_x_done	<=	1'b1;
 		x	<=	counter;
 	end
